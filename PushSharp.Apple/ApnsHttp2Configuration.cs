@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
 
 namespace PushSharp.Apple
 {
@@ -14,39 +13,30 @@ namespace PushSharp.Apple
         const uint APNS_PRODUCTION_PORT = 443;
         #endregion
 
-        public ApnsHttp2Configuration (ApnsServerEnvironment serverEnvironment, string certificateFile, string certificateFilePwd)
-            : this (serverEnvironment, System.IO.File.ReadAllBytes (certificateFile), certificateFilePwd)
-        {
-        }
-
-        public ApnsHttp2Configuration (ApnsServerEnvironment serverEnvironment, byte[] certificateData, string certificateFilePwd)
-            : this (serverEnvironment, new X509Certificate2 (certificateData, certificateFilePwd,
-                X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable))
-        {
-        }
-
         public ApnsHttp2Configuration (string overrideHost, uint overridePort, bool skipSsl = true)
         {
             SkipSsl = skipSsl;
 
-            Initialize (ApnsServerEnvironment.Sandbox, null);
+            Initialize (ApnsServerEnvironment.Sandbox, null, null, null);
 
             OverrideServer (overrideHost, overridePort);
         }
 
-        public ApnsHttp2Configuration (ApnsServerEnvironment serverEnvironment, X509Certificate2 certificate)
+        public ApnsHttp2Configuration (ApnsServerEnvironment serverEnvironment, string teamId, string privateKeyId, string privateKey)
         {
-            Initialize (serverEnvironment, certificate);
+            Initialize (serverEnvironment, teamId, privateKeyId, privateKey);
         }
 
-        void Initialize (ApnsServerEnvironment serverEnvironment, X509Certificate2 certificate)
+        void Initialize (ApnsServerEnvironment serverEnvironment, string teamId, string privateKeyId, string privateKey)
         {
             var production = serverEnvironment == ApnsServerEnvironment.Production;
 
             Host = production ? APNS_PRODUCTION_HOST : APNS_SANDBOX_HOST;
             Port = production ? APNS_PRODUCTION_PORT : APNS_SANDBOX_PORT;
-
-            Certificate = certificate;
+            
+            TeamId = teamId;
+            PrivateKeyId = privateKeyId;
+            PrivateKey = CngKey.Import(Convert.FromBase64String(privateKey), CngKeyBlobFormat.Pkcs8PrivateBlob);
 
             MillisecondsToWaitBeforeMessageDeclaredSuccess = 3000;
             ConnectionTimeout = 10000;
@@ -55,13 +45,6 @@ namespace PushSharp.Apple
             FeedbackIntervalMinutes = 10;
             FeedbackTimeIsUTC = false;
 
-            AdditionalCertificates = new List<X509Certificate2> ();
-            AddLocalAndMachineCertificateStores = false;
-
-            CheckIsApnsCertificate ();
-
-            ValidateServerCertificate = false;
-
             KeepAlivePeriod = TimeSpan.FromMinutes (20);
             KeepAliveRetryPeriod = TimeSpan.FromSeconds (30);
 
@@ -69,23 +52,6 @@ namespace PushSharp.Apple
             InternalBatchingWaitPeriod = TimeSpan.FromMilliseconds (750);
 
             InternalBatchFailureRetryCount = 1;
-        }
-
-
-        void CheckIsApnsCertificate ()
-        {
-            if (Certificate != null) {
-                var issuerName = Certificate.IssuerName.Name;
-                var commonName = Certificate.SubjectName.Name;
-
-                if (!issuerName.Contains ("Apple"))
-                    throw new ApnsConnectionException ("Your Certificate does not appear to be issued by Apple!  Please check to ensure you have the correct certificate!");
-                if (!commonName.Contains ("Apple Push Services:"))
-                    throw new ApnsConnectionException ("Your Certificate is not in the new combined Sandbox/Production APNS certificate format, please create a new single certificate to use");
-
-            } else {
-                throw new ApnsConnectionException ("You must provide a Certificate to connect to APNS with!");
-            }
         }
 
         public void OverrideServer (string host, uint port)
@@ -98,11 +64,11 @@ namespace PushSharp.Apple
 
         public uint Port { get; private set; }
 
-        public X509Certificate2 Certificate { get; private set; }
+        public string TeamId { get; private set; }
 
-        public List<X509Certificate2> AdditionalCertificates { get; private set; }
+        public string PrivateKeyId { get; set; }
 
-        public bool AddLocalAndMachineCertificateStores { get; set; }
+        public CngKey PrivateKey { get; private set; }
 
         public bool SkipSsl { get; set; }
 
@@ -111,8 +77,6 @@ namespace PushSharp.Apple
         public int FeedbackIntervalMinutes { get; set; }
 
         public bool FeedbackTimeIsUTC { get; set; }
-
-        public bool ValidateServerCertificate { get; set; }
 
         public int ConnectionTimeout { get; set; }
 

@@ -23,15 +23,13 @@
         </dependencies>
     </metadata>
     <files>
-        <file src="PushSharp.Core\bin\Release\PushSharp.Core.dll" target="lib\net45\PushSharp.Core.dll" />
+        <file src="PushSharp.Core\bin\Release\PushSharp.Core.dll" target="lib\net471\PushSharp.Core.dll" />
 
-        <file src="PushSharp.Amazon\bin\Release\PushSharp.Amazon.dll" target="lib\net45\PushSharp.Amazon.dll" />
-        <file src="PushSharp.Apple\bin\Release\PushSharp.Apple.dll" target="lib\net45\PushSharp.Apple.dll" />
-        <!-- <file src="PushSharp.Apple\bin\Release\HttpTwo.dll" target="lib\net45\HttpTwo.dll" /> -->
-        <!-- <file src="PushSharp.Apple\bin\Release\HttpTwo.HPack.dll" target="lib\net45\HttpTwo.HPack.dll" /> -->
-        <file src="PushSharp.Firefox\bin\Release\PushSharp.Firefox.dll" target="lib\net45\PushSharp.Firefox.dll" />
-        <file src="PushSharp.Windows\bin\Release\PushSharp.Windows.dll" target="lib\net45\PushSharp.Windows.dll" />
-        <file src="PushSharp.Google\bin\Release\PushSharp.Google.dll" target="lib\net45\PushSharp.Google.dll" />
-        <file src="PushSharp.Blackberry\bin\Release\PushSharp.Blackberry.dll" target="lib\net45\PushSharp.Blackberry.dll" />
+        <file src="PushSharp.Amazon\bin\Release\PushSharp.Amazon.dll" target="lib\net471\PushSharp.Amazon.dll" />
+        <file src="PushSharp.Apple\bin\Release\PushSharp.Apple.dll" target="lib\net471\PushSharp.Apple.dll" />
+        <file src="PushSharp.Firefox\bin\Release\PushSharp.Firefox.dll" target="lib\net471\PushSharp.Firefox.dll" />
+        <file src="PushSharp.Windows\bin\Release\PushSharp.Windows.dll" target="lib\net471\PushSharp.Windows.dll" />
+        <file src="PushSharp.Google\bin\Release\PushSharp.Google.dll" target="lib\net471\PushSharp.Google.dll" />
+        <file src="PushSharp.Blackberry\bin\Release\PushSharp.Blackberry.dll" target="lib\net471\PushSharp.Blackberry.dll" />
     </files>
 </package>
