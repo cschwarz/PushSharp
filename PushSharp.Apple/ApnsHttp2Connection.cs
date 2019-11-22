@@ -65,8 +65,6 @@ namespace PushSharp.Apple
                 requestMessage.Headers.Add("apns-push-type", notification.Priority == ApnsPriority.Low ? "background" : "alert"); // 5 or 10
             }
 
-            requestMessage.Headers.Add("content-length", payload.Length.ToString());
-
             if (!string.IsNullOrEmpty(notification.Topic))
                 requestMessage.Headers.Add("apns-topic", notification.Topic); // string topic
 
