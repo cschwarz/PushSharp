@@ -42,31 +42,35 @@ namespace PushSharp.Apple
 
             var payload = notification.Payload.ToString();
 
-            StringContent content = new StringContent(payload);
+            HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, uri)
+            {
+                Content = new StringContent(payload),
+                Version = new Version(2, 0)
+            };
 
-            content.Headers.Add("Authorization", string.Concat("Bearer ", CreateJwtToken()));
+            requestMessage.Headers.Add("Authorization", string.Concat("Bearer ", CreateJwtToken()));
 
-            content.Headers.Add("apns-id", notification.Uuid); // UUID            
+            requestMessage.Headers.Add("apns-id", notification.Uuid); // UUID            
 
             if (notification.Expiration.HasValue)
             {
                 var sinceEpoch = notification.Expiration.Value.ToUniversalTime() - new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
                 var secondsSinceEpoch = (long)sinceEpoch.TotalSeconds;
-                content.Headers.Add("apns-expiration", secondsSinceEpoch.ToString()); //Epoch in seconds
+                requestMessage.Headers.Add("apns-expiration", secondsSinceEpoch.ToString()); //Epoch in seconds
             }
 
             if (notification.Priority.HasValue)
             {
-                content.Headers.Add("apns-priority", notification.Priority == ApnsPriority.Low ? "5" : "10"); // 5 or 10
-                content.Headers.Add("apns-push-type", notification.Priority == ApnsPriority.Low ? "background" : "alert"); // 5 or 10
+                requestMessage.Headers.Add("apns-priority", notification.Priority == ApnsPriority.Low ? "5" : "10"); // 5 or 10
+                requestMessage.Headers.Add("apns-push-type", notification.Priority == ApnsPriority.Low ? "background" : "alert"); // 5 or 10
             }
 
-            content.Headers.Add("content-length", payload.Length.ToString());
+            requestMessage.Headers.Add("content-length", payload.Length.ToString());
 
             if (!string.IsNullOrEmpty(notification.Topic))
-                content.Headers.Add("apns-topic", notification.Topic); // string topic
+                requestMessage.Headers.Add("apns-topic", notification.Topic); // string topic
 
-            var response = await httpClient.SendAsync(new HttpRequestMessage(HttpMethod.Post, uri) { Content = content, Version = new Version(2, 0) });
+            var response = await httpClient.SendAsync(requestMessage);
 
             if (response.IsSuccessStatusCode)
             {
